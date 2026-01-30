@@ -31,8 +31,6 @@ def create_save_output_callback(key: str):
                     return
     return callback
 
-# TODO 1 Create a guardian callback that uses Model Armor
-
 # --- Remote Agents ---
 # These agents are running in their own containers. We connect to them via SimpleRemoteAgent.
 
@@ -116,6 +114,5 @@ root_agent = SequentialAgent(
     name="course_creation_pipeline",
     description="A pipeline that researches a topic and then builds a course from it.",
     sub_agents=[research_loop, content_builder],
-    # TODO 2 Add the guard callback to the orchestration
 )
 
