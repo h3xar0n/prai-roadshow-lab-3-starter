@@ -64,6 +64,7 @@ gcloud run deploy "researcher${SERVICE_SUFFIX}" \
   --image "${RESEARCHER_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
   --region $REGION \
+  --labels dev-tutorial=prod-ready-3 \
   --no-allow-unauthenticated \
   --set-env-vars GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
   --set-env-vars GOOGLE_GENAI_USE_VERTEXAI="true"
@@ -77,6 +78,7 @@ gcloud run deploy "content-builder${SERVICE_SUFFIX}" \
   --image "${CONTENT_BUILDER_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
   --region $REGION \
+  --labels dev-tutorial=prod-ready-3 \
   --no-allow-unauthenticated \
   --set-env-vars GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
   --set-env-vars GOOGLE_GENAI_USE_VERTEXAI="true"
@@ -90,6 +92,7 @@ gcloud run deploy "judge${SERVICE_SUFFIX}" \
   --image "${JUDGE_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
   --region $REGION \
+  --labels dev-tutorial=prod-ready-3 \
   --no-allow-unauthenticated \
   --set-env-vars GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
   --set-env-vars GOOGLE_GENAI_USE_VERTEXAI="true"
@@ -103,6 +106,7 @@ gcloud run deploy "orchestrator${SERVICE_SUFFIX}" \
   --image "${ORCHESTRATOR_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
   --region $REGION \
+  --labels dev-tutorial=prod-ready-3 \
   --no-allow-unauthenticated \
   --set-env-vars RESEARCHER_AGENT_CARD_URL=$RESEARCHER_URL/a2a/agent/.well-known/agent-card.json \
   --set-env-vars JUDGE_AGENT_CARD_URL=$JUDGE_URL/a2a/agent/.well-known/agent-card.json \
@@ -119,6 +123,7 @@ gcloud run deploy "course-creator${SERVICE_SUFFIX}" \
   --image "${COURSE_CREATOR_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
   --region $REGION \
+  --labels dev-tutorial=prod-ready-3 \
   --allow-unauthenticated \
   --set-env-vars AGENT_SERVER_URL=$ORCHESTRATOR_URL \
   --set-env-vars GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}"
