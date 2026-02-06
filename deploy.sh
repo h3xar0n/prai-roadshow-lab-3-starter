@@ -40,9 +40,26 @@ if [[ "${SERVICE_SUFFIX}" == "" ]]; then
 fi
 echo "Using service suffix: '${SERVICE_SUFFIX}'"
 
+# Helper function to build image with correct context
+build_image() {
+  local DOCKERFILE=$1
+  local IMAGE_TAG=$2
+  
+  echo "Building ${IMAGE_TAG} from ${DOCKERFILE}..."
+  cp "${DOCKERFILE}" Dockerfile
+  # Use trap to ensure Dockerfile is removed even if build fails
+  trap "rm -f Dockerfile" EXIT
+  
+  gcloud builds submit --tag "${IMAGE_TAG}" .
+  
+  rm -f Dockerfile
+  trap - EXIT
+}
+
 echo "Deploying researcher..."
 RESEARCHER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cloud-run-source-deploy/researcher${SERVICE_SUFFIX}:latest"
-gcloud builds submit --tag "${RESEARCHER_IMAGE}" --dockerfile agents/researcher/Dockerfile .
+build_image "agents/researcher/Dockerfile" "${RESEARCHER_IMAGE}"
+
 gcloud run deploy "researcher${SERVICE_SUFFIX}" \
   --image "${RESEARCHER_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
@@ -54,7 +71,8 @@ RESEARCHER_URL=$(gcloud run services describe "researcher${SERVICE_SUFFIX}" --re
 
 echo "Deploying content-builder..."
 CONTENT_BUILDER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cloud-run-source-deploy/content-builder${SERVICE_SUFFIX}:latest"
-gcloud builds submit --tag "${CONTENT_BUILDER_IMAGE}" --dockerfile agents/content_builder/Dockerfile .
+build_image "agents/content_builder/Dockerfile" "${CONTENT_BUILDER_IMAGE}"
+
 gcloud run deploy "content-builder${SERVICE_SUFFIX}" \
   --image "${CONTENT_BUILDER_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
@@ -66,7 +84,8 @@ CONTENT_BUILDER_URL=$(gcloud run services describe "content-builder${SERVICE_SUF
 
 echo "Deploying judge..."
 JUDGE_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cloud-run-source-deploy/judge${SERVICE_SUFFIX}:latest"
-gcloud builds submit --tag "${JUDGE_IMAGE}" --dockerfile agents/judge/Dockerfile .
+build_image "agents/judge/Dockerfile" "${JUDGE_IMAGE}"
+
 gcloud run deploy "judge${SERVICE_SUFFIX}" \
   --image "${JUDGE_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
@@ -78,7 +97,8 @@ JUDGE_URL=$(gcloud run services describe "judge${SERVICE_SUFFIX}" --region $REGI
 
 echo "Deploying orchestrator..."
 ORCHESTRATOR_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cloud-run-source-deploy/orchestrator${SERVICE_SUFFIX}:latest"
-gcloud builds submit --tag "${ORCHESTRATOR_IMAGE}" --dockerfile agents/orchestrator/Dockerfile .
+build_image "agents/orchestrator/Dockerfile" "${ORCHESTRATOR_IMAGE}"
+
 gcloud run deploy "orchestrator${SERVICE_SUFFIX}" \
   --image "${ORCHESTRATOR_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
@@ -93,7 +113,8 @@ ORCHESTRATOR_URL=$(gcloud run services describe "orchestrator${SERVICE_SUFFIX}" 
 
 echo "Deploying course-creator (frontend)..."
 COURSE_CREATOR_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cloud-run-source-deploy/course-creator${SERVICE_SUFFIX}:latest"
-gcloud builds submit --tag "${COURSE_CREATOR_IMAGE}" --dockerfile app/Dockerfile .
+build_image "app/Dockerfile" "${COURSE_CREATOR_IMAGE}"
+
 gcloud run deploy "course-creator${SERVICE_SUFFIX}" \
   --image "${COURSE_CREATOR_IMAGE}" \
   --project $GOOGLE_CLOUD_PROJECT \
