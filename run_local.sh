@@ -2,10 +2,21 @@
 
 # Kill any existing processes on these ports
 echo "Stopping any existing processes on ports 8000-8004..."
-lsof -ti:8000,8001,8002,8003,8004 | xargs kill -9 2>/dev/null
+if command -v lsof >/dev/null 2>&1; then
+    lsof -ti:8000,8001,8002,8003,8004 | xargs kill -9 2>/dev/null
+else
+    echo "lsof not found, skipping port cleanup. Please ensure ports 8000-8004 are free."
+fi
 
 # Set common environment variables for local development
-export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
+# Detect OS and adjust gcloud command
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    GCLOUD_CMD="gcloud.cmd"
+else
+    GCLOUD_CMD="gcloud"
+fi
+
+export GOOGLE_CLOUD_PROJECT=$($GCLOUD_CMD config get-value project)
 export GOOGLE_CLOUD_LOCATION="us-central1"
 export GOOGLE_GENAI_USE_VERTEXAI="True" # Use Gemini API locally
 export GOOGLE_API_KEY="<your-key-here>" # Use if not using Vertex AI
@@ -45,7 +56,7 @@ echo "Starting Orchestrator Agent on port 8000..."
 pushd app
 export AGENT_SERVER_URL=http://localhost:8004
 
-uv run uvicorn main:app --host 0.0.0.0 --port 8000 &
+uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload &
 BACKEND_PID=$!
 popd
 

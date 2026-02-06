@@ -24,6 +24,15 @@ class Feedback(BaseModel):
     run_id: str | None = None
     user_id: str | None = None
 
+from google.cloud import modelarmor_v1
+from safety_util import parse_model_armor_response
+
+# Model Armor Configuration
+MODEL_ARMOR_TEMPLATE = "projects/alert-imprint-485904-j9/locations/us-central1/templates/dev-template"
+model_armor_client = modelarmor_v1.ModelArmorClient(
+    client_options={"api_endpoint": "modelarmor.us-central1.rep.googleapis.com"}
+)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -150,6 +159,33 @@ class SimpleChatRequest(BaseModel):
 @app.post("/api/chat_stream")
 async def chat_stream(request: SimpleChatRequest):
     """Streaming chat endpoint."""
+    """Streaming chat endpoint."""
+    # Model Armor Safety Check
+    try:
+        user_prompt_data = modelarmor_v1.DataItem(text=request.message)
+        ma_request = modelarmor_v1.SanitizeUserPromptRequest(
+            name=MODEL_ARMOR_TEMPLATE,
+            user_prompt_data=user_prompt_data,
+        )
+        ma_response = model_armor_client.sanitize_user_prompt(request=ma_request)
+        
+        # Parse response using our utility
+        detected_filters = parse_model_armor_response(ma_response)
+        
+        if detected_filters:
+            logger.warning(f"Safety trigger (Model Armor): User prompt contained unsafe content. Risk: {detected_filters}")
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail=f"Safety error: Prompt contains forbidden content: {detected_filters}")
+            
+    except Exception as e:
+        # If it is the HTTP exception we just raised, re-raise it
+        if "Safety error" in str(e):
+            raise e
+        # Otherwise log error but fail open (or closed depending on policy - here failing open for demo simplicity unless it's a critical error)
+        logger.error(f"Model Armor check failed: {e}")
+        # Note: You might want to 'fail closed' here in a real high-security app
+
+
     global agent_name, agent_server_url
     if not agent_name:
         agent_name = (await list_agents(agent_server_url))[0] # type: ignore

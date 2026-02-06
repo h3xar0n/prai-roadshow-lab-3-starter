@@ -17,10 +17,10 @@ function showProgress() {
 
 function updateStatus(text) {
     statusText.textContent = text;
-    
+
     // Simple logic to highlight steps based on text content
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-    
+
     if (text.toLowerCase().includes('research')) {
         document.getElementById('step-researcher').classList.add('active');
     } else if (text.toLowerCase().includes('judge') || text.toLowerCase().includes('evaluating')) {
@@ -34,6 +34,8 @@ createForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const topic = topicInput.value.trim();
     if (!topic) return;
+
+    // Client-side check removed in favor of Server-side Model Armor check
 
     showProgress();
 
@@ -50,7 +52,16 @@ createForm.addEventListener('submit', async (e) => {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            let errorMessage = `HTTP error! status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+            } catch (e) {
+                console.error("Could not parse error response JSON", e);
+            }
+            throw new Error(errorMessage);
         }
 
         const reader = response.body.getReader();
@@ -60,7 +71,7 @@ createForm.addEventListener('submit', async (e) => {
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
-            
+
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
             buffer = lines.pop();
@@ -71,6 +82,9 @@ createForm.addEventListener('submit', async (e) => {
                     const data = JSON.parse(line);
                     if (data.type === 'progress') {
                         updateStatus(data.text);
+                    } else if (data.type === 'error') {
+                        updateStatus(data.text);
+                        throw new Error(data.text);
                     } else if (data.type === 'result') {
                         // Save result and redirect
                         localStorage.setItem('currentCourse', data.text);
@@ -85,7 +99,7 @@ createForm.addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error('Error:', error);
-        statusText.textContent = 'Something went wrong. Please refresh and try again.';
-        // Re-enable form if needed, or just let them refresh
+        statusText.textContent = error.message || 'Something went wrong. Please refresh and try again.';
+        statusText.classList.add('error');
     }
 });

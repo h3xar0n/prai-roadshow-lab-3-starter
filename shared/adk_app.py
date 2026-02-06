@@ -247,6 +247,8 @@ def main(
         reload_agents=reload_agents,
         extra_plugins=extra_plugins,
     )
+    
+    
     if a2a:
         from starlette.middleware.base import BaseHTTPMiddleware
         from a2a_utils import a2a_card_dispatch
@@ -272,3 +274,4 @@ def main(
 ################################################################################
 if __name__ == "__main__":
     main()
+# DRY Sync Test Line

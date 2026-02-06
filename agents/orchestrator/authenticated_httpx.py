@@ -1,13 +1,15 @@
 
+import os
 import subprocess
 from urllib.parse import urlparse
 
-from google.adk.agents.remote_a2a_agent import DEFAULT_TIMEOUT
 from google.auth.transport.requests import AuthorizedSession, Request
 from google.auth.exceptions import DefaultCredentialsError
 from google.oauth2.credentials import Credentials
 from google.oauth2.id_token import fetch_id_token_credentials
 import httpx
+
+DEFAULT_TIMEOUT = 600.0
 
 def create_authenticated_client(
         remote_service_url: str,
@@ -52,9 +54,10 @@ def create_authenticated_client(
                     # Local run, fetching authenticated user's identity token
                     # from gcloud CLI
                     try:
+                        gcloud_cmd = "gcloud.cmd" if os.name == "nt" else "gcloud"
                         id_token = subprocess.check_output(
                             [
-                                "gcloud",
+                                gcloud_cmd,
                                 "auth",
                                 "print-identity-token",
                                 "-q"
@@ -63,7 +66,7 @@ def create_authenticated_client(
                         if id_token:
                             refresh_token = subprocess.check_output(
                                 [
-                                    "gcloud",
+                                    gcloud_cmd,
                                     "auth",
                                     "print-refresh-token",
                                     "-q"

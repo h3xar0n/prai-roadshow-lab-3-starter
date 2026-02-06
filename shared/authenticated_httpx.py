@@ -1,4 +1,5 @@
 
+import os
 import subprocess
 from urllib.parse import urlparse
 
@@ -53,9 +54,10 @@ def create_authenticated_client(
                     # Local run, fetching authenticated user's identity token
                     # from gcloud CLI
                     try:
+                        gcloud_cmd = "gcloud.cmd" if os.name == "nt" else "gcloud"
                         id_token = subprocess.check_output(
                             [
-                                "gcloud",
+                                gcloud_cmd,
                                 "auth",
                                 "print-identity-token",
                                 "-q"
@@ -64,7 +66,7 @@ def create_authenticated_client(
                         if id_token:
                             refresh_token = subprocess.check_output(
                                 [
-                                    "gcloud",
+                                    gcloud_cmd,
                                     "auth",
                                     "print-refresh-token",
                                     "-q"
