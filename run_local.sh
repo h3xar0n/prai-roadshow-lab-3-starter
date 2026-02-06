@@ -8,6 +8,14 @@ else
     echo "lsof not found, skipping port cleanup. Please ensure ports 8000-8004 are free."
 fi
 
+# Load variables from .env if it exists
+if [ -f .env ]; then
+    echo "Loading environment variables from .env..."
+    set -a
+    source .env
+    set +a
+fi
+
 # Set common environment variables for local development
 # Detect OS and adjust gcloud command
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then

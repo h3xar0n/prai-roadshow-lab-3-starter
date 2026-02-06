@@ -28,7 +28,7 @@ from google.cloud import modelarmor_v1
 from safety_util import parse_model_armor_response
 
 # Model Armor Configuration
-MODEL_ARMOR_TEMPLATE = "projects/alert-imprint-485904-j9/locations/us-central1/templates/dev-template"
+MODEL_ARMOR_TEMPLATE = os.getenv("TEMPLATE_NAME")
 model_armor_client = modelarmor_v1.ModelArmorClient(
     client_options={"api_endpoint": "modelarmor.us-central1.rep.googleapis.com"}
 )

@@ -9,6 +9,10 @@ if [ -f ".env" ]; then
   source .env
 fi
 
+if [[ "${TEMPLATE_NAME}" == "" ]]; then
+  echo "WARNING: TEMPLATE_NAME is not set. The application relies on this for Model Armor configuration."
+fi
+
 if [[ "${GOOGLE_CLOUD_PROJECT}" == "" ]]; then
   GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project -q)
 fi
@@ -126,4 +130,5 @@ gcloud run deploy "course-creator${SERVICE_SUFFIX}" \
   --labels dev-tutorial=prod-ready-3 \
   --allow-unauthenticated \
   --set-env-vars AGENT_SERVER_URL=$ORCHESTRATOR_URL \
-  --set-env-vars GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}"
+  --set-env-vars GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
+  --set-env-vars TEMPLATE_NAME="${TEMPLATE_NAME}"
