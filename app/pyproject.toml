@@ -11,7 +11,7 @@ dependencies = [
     "google-genai==1.57.*",
     "google-cloud-logging==3.13.0",
     "opentelemetry-exporter-gcp-trace==1.11.0",
-    "google-cloud-modelarmor",
+    "google-cloud-modelarmor==0.4.0",
 ]
 
 [[tool.uv.index]]
