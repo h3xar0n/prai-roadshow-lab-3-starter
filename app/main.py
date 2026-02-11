@@ -15,8 +15,10 @@ from opentelemetry import trace
 from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 from opentelemetry.sdk.trace import TracerProvider, export
 from pydantic import BaseModel
-
 from authenticated_httpx import create_authenticated_client
+
+# Task 2: import Model Armor and the new safety_util
+# add import statements here
 
 class Feedback(BaseModel):
     score: float
@@ -24,14 +26,8 @@ class Feedback(BaseModel):
     run_id: str | None = None
     user_id: str | None = None
 
-from google.cloud import modelarmor_v1
-from safety_util import parse_model_armor_response
-
-# Model Armor Configuration
-MODEL_ARMOR_TEMPLATE = os.getenv("TEMPLATE_NAME")
-model_armor_client = modelarmor_v1.ModelArmorClient(
-    client_options={"api_endpoint": "modelarmor.us-central1.rep.googleapis.com"}
-)
+# Task 3: Model Armor configuration
+# add configuration here
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
