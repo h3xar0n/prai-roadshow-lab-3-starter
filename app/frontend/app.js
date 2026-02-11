@@ -35,8 +35,6 @@ createForm.addEventListener('submit', async (e) => {
     const topic = topicInput.value.trim();
     if (!topic) return;
 
-    // Client-side check removed in favor of Server-side Model Armor check
-
     showProgress();
 
     try {
@@ -50,19 +48,8 @@ createForm.addEventListener('submit', async (e) => {
                 session_id: sessionId
             })
         });
-
-        if (!response.ok) {
-            let errorMessage = `HTTP error! status: ${response.status}`;
-            try {
-                const errorData = await response.json();
-                if (errorData.detail) {
-                    errorMessage = errorData.detail;
-                }
-            } catch (e) {
-                console.error("Could not parse error response JSON", e);
-            }
-            throw new Error(errorMessage);
-        }
+        // Task 5: display error to user
+        // add code here
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
