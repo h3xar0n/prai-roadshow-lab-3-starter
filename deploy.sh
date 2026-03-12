@@ -39,8 +39,8 @@ echo "Using project ${GOOGLE_CLOUD_PROJECT}."
 echo "Using compute region ${REGION}."
 
 # Terraform Deployment
-echo "Initializing Terraform..."
-if command -v terraform &> /dev/null; then
+if command -v terraform &> /dev/null && grep -q "output \"model_armor_template_name\"" terraform/outputs.tf; then
+    echo "Initializing Terraform..."
     terraform -chdir=terraform init
 
     echo "Importing existing resources if needed..."
@@ -61,10 +61,13 @@ if command -v terraform &> /dev/null; then
       echo "TEMPLATE_NAME=${TEMPLATE_NAME}" >> .env
     fi
 else
-    echo "WARNING: terraform not found in PATH. Skipping Terraform deployment steps."
+    echo "Skipping Terraform deployment steps (outputs.tf is incomplete or terraform not found)."
     # Fallback: check if TEMPLATE_NAME is already in .env
     if [[ -z "${TEMPLATE_NAME}" ]]; then
-        TEMPLATE_NAME=$(grep TEMPLATE_NAME .env | cut -d '=' -f2)
+        # Ensure we read it from .env correctly
+        if [ -f ".env" ]; then
+          TEMPLATE_NAME=$(grep "^TEMPLATE_NAME=" .env | cut -d '=' -f2)
+        fi
     fi
 fi
 
