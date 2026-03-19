@@ -1,5 +1,7 @@
 #!/bin/bash
 
+uv sync
+
 # Kill any existing processes on these ports
 echo "Stopping any existing processes on ports 8000-8004..."
 if command -v lsof >/dev/null 2>&1; then
