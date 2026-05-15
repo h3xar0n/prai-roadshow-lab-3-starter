@@ -49,7 +49,18 @@ createForm.addEventListener('submit', async (e) => {
             })
         });
         // Task 5: display error to user
-        // add code here
+        if (!response.ok) {
+            let errorMessage = `HTTP error! status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+            } catch (e) {
+                console.error("Could not parse error response JSON", e);
+            }
+            throw new Error(errorMessage);
+        }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
