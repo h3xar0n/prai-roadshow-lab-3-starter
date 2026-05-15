@@ -40,6 +40,10 @@ fi
 echo "Using project ${GOOGLE_CLOUD_PROJECT}."
 echo "Using compute region ${REGION}."
 
+# Enable required Google Cloud APIs
+echo "Enabling required APIs..."
+gcloud services enable aiplatform.googleapis.com run.googleapis.com cloudbuild.googleapis.com --project "${GOOGLE_CLOUD_PROJECT}"
+
 # Terraform Deployment
 if command -v terraform &> /dev/null && grep -q "output \"model_armor_template_name\"" terraform/outputs.tf; then
     echo "Initializing Terraform..."
