@@ -18,7 +18,8 @@ from pydantic import BaseModel
 from authenticated_httpx import create_authenticated_client
 
 # Task 2: import Model Armor and the new safety_util
-# add import statements here
+from google.cloud import modelarmor_v1
+from safety_util import parse_model_armor_response
 
 class Feedback(BaseModel):
     score: float
@@ -27,7 +28,10 @@ class Feedback(BaseModel):
     user_id: str | None = None
 
 # Task 3: Model Armor configuration
-# add configuration here
+MODEL_ARMOR_TEMPLATE = os.getenv("TEMPLATE_NAME")
+model_armor_client = modelarmor_v1.ModelArmorClient(
+    client_options={"api_endpoint": "modelarmor.us-central1.rep.googleapis.com"}
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -156,8 +160,29 @@ class SimpleChatRequest(BaseModel):
 async def chat_stream(request: SimpleChatRequest):
     """Streaming chat endpoint."""
     # Task 4: Model Armor safety check before going to agent
-    # add code here
-
+    try:
+        user_prompt_data = modelarmor_v1.DataItem(text=request.message)
+        ma_request = modelarmor_v1.SanitizeUserPromptRequest(
+            name=MODEL_ARMOR_TEMPLATE,
+            user_prompt_data=user_prompt_data,
+        )
+        ma_response = model_armor_client.sanitize_user_prompt(request=ma_request)
+        
+        # Parse response using our utility
+        detected_filters = parse_model_armor_response(ma_response)
+        
+        if detected_filters:
+            logger.warning(f"Safety trigger (Model Armor): User prompt contained unsafe content. Risk: {detected_filters}")
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail=f"Safety error: Prompt contains forbidden content: {detected_filters}")
+            
+    except Exception as e:
+        # If it is the HTTP exception we just raised, re-raise it
+        if "Safety error" in str(e):
+            raise e
+        # Otherwise log error but fail open (or closed depending on policy - here failing open for demo simplicity unless it's a critical error)
+        logger.error(f"Model Armor check failed: {e}")
+        # Note: You might want to 'fail closed' here in a real high-security app
 
     global agent_name, agent_server_url
     if not agent_name:

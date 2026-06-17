@@ -31,6 +31,10 @@ export GOOGLE_CLOUD_LOCATION="us-central1"
 export GOOGLE_GENAI_USE_VERTEXAI="True" # Use Gemini API locally
 export GOOGLE_API_KEY="<your-key-here>" # Use if not using Vertex AI
 
+echo "Ensuring Vertex AI API is enabled..."
+$GCLOUD_CMD services enable aiplatform.googleapis.com --project "${GOOGLE_CLOUD_PROJECT}"
+echo "API enabled. Proceeding with agent startup..."
+
 echo "Starting Researcher Agent on port 8001..."
 pushd agents/researcher
 uv run adk_app.py --host 0.0.0.0 --port 8001 --a2a . &
